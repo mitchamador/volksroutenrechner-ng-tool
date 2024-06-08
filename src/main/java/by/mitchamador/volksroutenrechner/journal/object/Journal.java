@@ -101,10 +101,10 @@ public class Journal {
     }
 
     public byte[] toByteArray(int size) {
-        return toByteArray(size, false);
+        return toByteArray(size, JournalItem.ITEM_V2);
     }
 
-    public byte[] toByteArray(int size, boolean oldVersion) {
+    public byte[] toByteArray(int size, int version) {
         byte[] array = new byte[size];
 
         JournalSize journalSize = JournalSize.get(size);
@@ -119,7 +119,7 @@ public class Journal {
                 count = total;
             }
             while (--count >= 0) {
-                index += entries[i].getItems().get(count).toByteArray(array, index, oldVersion ? JournalItem.ITEM_V1 : JournalItem.ITEM_V2);
+                index += entries[i].getItems().get(count).toByteArray(array, index, version);
             }
             index = startIndex + total * entry.getLength();
         }

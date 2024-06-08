@@ -1,8 +1,8 @@
 package by.mitchamador.volksroutenrechner.journal.object;
 
 public abstract class JournalItem {
-    protected final static int ITEM_V1 = 0xA5;
-    protected final static int ITEM_V2 = 0xAA;
+    public final static int ITEM_V1 = 0xA5;
+    public final static int ITEM_V2 = 0xAA;
 
     protected int status;
     protected final Time time;

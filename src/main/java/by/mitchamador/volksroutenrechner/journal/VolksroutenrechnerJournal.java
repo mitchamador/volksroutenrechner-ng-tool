@@ -2,6 +2,7 @@ package by.mitchamador.volksroutenrechner.journal;
 
 import by.mitchamador.volksroutenrechner.journal.object.Journal;
 import by.mitchamador.volksroutenrechner.journal.object.JournalEntry;
+import by.mitchamador.volksroutenrechner.journal.object.JournalItem;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -15,8 +16,8 @@ public class VolksroutenrechnerJournal {
     public static void main(String[] args) {
 
         Options options = new Options();
-        options.addOption(Option.builder("i").longOpt("import").argName("journal file name").hasArgs().required().desc("Import journal").build());
-        options.addOption(Option.builder("o").longOpt("output").argName("journal output name").optionalArg(true).desc("Output journal").build());
+        options.addOption(Option.builder("i").longOpt("import").argName("journal file name").hasArg().required().desc("Import journal").build());
+        options.addOption(Option.builder("o").longOpt("output").argName("journal output name").optionalArg(true).hasArg().desc("Output journal").build());
         options.addOption(Option.builder("os").longOpt("output-size").argName("journal output size name").hasArg().desc("Output journal's size (default 2048)").build());
 
         try {
@@ -62,7 +63,7 @@ public class VolksroutenrechnerJournal {
         System.out.print(mainJournal.getPrintableString(true));
 
         if (config.getOutputSize() > 0) {
-            createJournalEeprom(mainJournal.toByteArray(config.getOutputSize(), true), config.getOutput());
+            createJournalEeprom(mainJournal.toByteArray(config.getOutputSize(), JournalItem.ITEM_V2), config.getOutput());
         }
 
     }

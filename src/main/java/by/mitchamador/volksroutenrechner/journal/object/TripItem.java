@@ -13,7 +13,6 @@ public class TripItem extends JournalItem {
     public static final int LENGTH = 18;
 
     private final static double ODO_CONST = 16000.0;
-    private final boolean oldVersion;
 
     /*
         typedef struct {
@@ -60,8 +59,7 @@ public class TripItem extends JournalItem {
     public TripItem(byte[] array) {
         super(array);
 
-        oldVersion = array[0] == (byte) JournalItem.ITEM_V1;
-        if (oldVersion) {
+        if (status == JournalItem.ITEM_V1) {
             odo = (Byte.toUnsignedInt(array[7]) << 8) + Byte.toUnsignedInt(array[6]);
             odo_temp = (Byte.toUnsignedInt(array[9]) << 8) + Byte.toUnsignedInt(array[8]);
             fuel_tmp1 = Byte.toUnsignedInt(array[10]);
@@ -69,7 +67,7 @@ public class TripItem extends JournalItem {
             fuel = (Byte.toUnsignedInt(array[13]) << 8) + Byte.toUnsignedInt(array[12]);
             total_time = (Byte.toUnsignedInt(array[17]) << 24) + (Byte.toUnsignedInt(array[16]) << 16) + ((Byte.toUnsignedInt(array[15])) << 8) + Byte.toUnsignedInt(array[14]);
             fillPrintedData();
-        } else {
+        } else if (status == JournalItem.ITEM_V2) {
             pOdo = (Byte.toUnsignedInt(array[7]) << 8) + Byte.toUnsignedInt(array[6]);
             pAverageSpeed = (Byte.toUnsignedInt(array[9]) << 8) + Byte.toUnsignedInt(array[8]);
             pAverageFuel = (Byte.toUnsignedInt(array[11]) << 8) + Byte.toUnsignedInt(array[10]);
@@ -80,12 +78,19 @@ public class TripItem extends JournalItem {
     }
 
     public void fixTime(String dateFix) {
-        if (oldVersion && time.getDate() != null) {
-            if (time.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().compareTo(
+        if (status == JournalItem.ITEM_V1) {
+            if (time.getDate() != null && time.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().compareTo(
                     LocalDateTime.of(LocalDate.from(DateTimeFormatter.ofPattern("dd.MM.yyyy").parse(dateFix)), LocalTime.MIDNIGHT)) < 0) {
                 total_time <<= 1;
-                fillPrintedData();
             }
+            fillPrintedData();
+        } else if (status == JournalItem.ITEM_V2) {
+            // convert to v1
+            odo = pOdo / 10;
+            odo_temp = (int) ODO_CONST * (pOdo % 10) / 10;
+            fuel_tmp1 = fuel_tmp2 = 0;
+            fuel = pTotalFuel * 10;
+            total_time = pTime * 60;
         }
     }
 
@@ -105,14 +110,14 @@ public class TripItem extends JournalItem {
     @Override
     public int toByteArray(byte[] array, int index, int version) {
         index += headerToByteArray(array, index, version);
-        if (oldVersion) {
+        if (version == JournalItem.ITEM_V1) {
             index += putShortToArray(odo, array, index);
             index += putShortToArray(odo_temp, array, index);
             index += putByteToArray(fuel_tmp1, array, index);
             index += putByteToArray(fuel_tmp2, array, index);
             index += putShortToArray(fuel, array, index);
             putLongToArray(total_time, array, index);
-        } else {
+        } else if (version == JournalItem.ITEM_V2) {
             index += putShortToArray(pOdo, array, index);
             index += putShortToArray(pAverageSpeed, array, index);
             index += putShortToArray(pAverageFuel, array, index);
