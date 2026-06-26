@@ -103,6 +103,7 @@ public class JournalEntry {
         }
         s.append("\n");
         for (JournalItem item : itemsList) {
+            s.append(itemsList.indexOf(item) + 1).append("; ");
             s.append(item.getPrintableString(units)).append("\n");
         }
         return s.toString();
