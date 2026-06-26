@@ -50,7 +50,7 @@ public class VolksroutenrechnerJournal {
     private void run() throws IOException {
         Journal mainJournal = new Journal();
         for (String filename : config.getInput()) {
-            for (File f : FileUtils.listFiles(new File(FilenameUtils.getPath(filename)), new WildcardFileFilter(FilenameUtils.getName(filename)), null)) {
+            for (File f : FileUtils.listFiles(new File(FilenameUtils.getFullPath(filename)), new WildcardFileFilter(FilenameUtils.getName(filename)), null)) {
                 if (!f.isDirectory()) {
                     Journal journal = Journal.create(f.getCanonicalPath());
                     for (JournalEntry item : journal.getEntries()) {
