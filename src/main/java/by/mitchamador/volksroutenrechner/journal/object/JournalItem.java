@@ -16,6 +16,10 @@ public abstract class JournalItem {
         return status == ITEM_V1 || status == ITEM_V2;
     }
 
+    public Time getTime() {
+        return time;
+    }
+
     public abstract String getPrintableString(boolean units);
 
     public boolean timeEquals(JournalItem item) {

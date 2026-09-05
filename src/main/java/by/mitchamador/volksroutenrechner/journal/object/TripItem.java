@@ -94,6 +94,26 @@ public class TripItem extends JournalItem {
         }
     }
 
+    public int getPOdo() {
+        return pOdo;
+    }
+
+    public int getPAverageSpeed() {
+        return pAverageSpeed;
+    }
+
+    public int getPAverageFuel() {
+        return pAverageFuel;
+    }
+
+    public int getPTotalFuel() {
+        return pTotalFuel;
+    }
+
+    public int getPTime() {
+        return pTime;
+    }
+
     @Override
     public String getPrintableString(boolean units) {
         return time.getPrintableString() + ";" +

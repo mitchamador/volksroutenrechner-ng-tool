@@ -26,6 +26,18 @@ public class AccelItem extends JournalItem {
         result = ((Byte.toUnsignedInt(array[9]) << 8) + Byte.toUnsignedInt(array[8]));
     }
 
+    public int getLower() {
+        return lower;
+    }
+
+    public int getUpper() {
+        return upper;
+    }
+
+    public int getResult() {
+        return result;
+    }
+
     @Override
     public String getPrintableString(boolean units) {
         return time.getPrintableString() + ";"
