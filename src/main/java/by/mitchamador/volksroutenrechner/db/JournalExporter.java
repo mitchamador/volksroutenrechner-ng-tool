@@ -48,7 +48,12 @@ public class JournalExporter {
                     latest = time;
                 }
             }
-            if (latest != null) {
+
+            Long since = repository.getSinceTime(TRIP_TYPES[i]);
+            if (since != null) {
+                entry.setTime(new Time(since));
+            } else if (latest != null) {
+                // на случай, если since ещё не сохранён (например, старая БД без импорта через новый код)
                 entry.setTime(latest);
             }
         }

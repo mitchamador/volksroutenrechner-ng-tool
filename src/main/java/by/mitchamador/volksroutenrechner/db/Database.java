@@ -28,6 +28,14 @@ public class Database {
                     "result_cs INTEGER NOT NULL" +
                     ")";
 
+    // хранит поле "since" из заголовка journal (по одному значению на trip_type: C/A/B) -
+    // это отдельное поле устройства, которое не выводится из самих записей
+    private static final String SCHEMA_JOURNAL_META =
+            "CREATE TABLE IF NOT EXISTS journal_meta (" +
+                    "trip_type TEXT PRIMARY KEY, " +
+                    "since_time INTEGER NOT NULL" + // epoch millis
+                    ")";
+
     private static final String INDEX_TRIP_RECORDS =
             "CREATE INDEX IF NOT EXISTS idx_trip_records_type_time ON trip_records (trip_type, time)";
 
@@ -49,6 +57,7 @@ public class Database {
              Statement statement = connection.createStatement()) {
             statement.execute(SCHEMA_TRIP_RECORDS);
             statement.execute(SCHEMA_ACCEL_RECORDS);
+            statement.execute(SCHEMA_JOURNAL_META);
             statement.execute(INDEX_TRIP_RECORDS);
             statement.execute(INDEX_ACCEL_RECORDS);
         }

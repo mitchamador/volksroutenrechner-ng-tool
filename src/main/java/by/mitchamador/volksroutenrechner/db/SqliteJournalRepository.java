@@ -165,6 +165,30 @@ public class SqliteJournalRepository implements JournalRepository {
         }
     }
 
+    @Override
+    public Long getSinceTime(char tripType) throws SQLException {
+        try (Connection connection = database.getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT since_time FROM journal_meta WHERE trip_type = ?")) {
+            statement.setString(1, String.valueOf(tripType));
+            try (ResultSet rs = statement.executeQuery()) {
+                return rs.next() ? rs.getLong("since_time") : null;
+            }
+        }
+    }
+
+    @Override
+    public void updateSinceTimeIfNewer(char tripType, long sinceTime) throws SQLException {
+        String sql = "INSERT INTO journal_meta (trip_type, since_time) VALUES (?, ?) " +
+                "ON CONFLICT(trip_type) DO UPDATE SET since_time = excluded.since_time " +
+                "WHERE excluded.since_time > journal_meta.since_time";
+        try (Connection connection = database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, String.valueOf(tripType));
+            statement.setLong(2, sinceTime);
+            statement.executeUpdate();
+        }
+    }
+
     private void appendPeriod(StringBuilder sql, List<Object> params, String column, Long from, Long to) {
         if (from != null) {
             sql.append(" AND ").append(column).append(" >= ?");

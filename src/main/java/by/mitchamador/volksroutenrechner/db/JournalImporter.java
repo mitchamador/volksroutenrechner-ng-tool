@@ -42,6 +42,9 @@ public class JournalImporter {
                     skipped++;
                 }
             }
+            if (i < 3) {
+                repository.updateSinceTimeIfNewer(TRIP_TYPES[i], entries[i].getTime().getDate().getTime());
+            }
         }
 
         return new ImportResult(imported, skipped);
