@@ -16,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class WebServer {
@@ -50,7 +51,12 @@ public class WebServer {
 
     private void getTrips(Context ctx) throws Exception {
         char type = parseTripType(ctx.pathParam("type"));
-        ctx.json(repository.findTrips(type, parseLongParam(ctx.queryParam("from")), parseLongParam(ctx.queryParam("to"))));
+        List<TripRecord> records = repository.findTrips(type, parseLongParam(ctx.queryParam("from")), parseLongParam(ctx.queryParam("to")));
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("since", repository.getSinceTime(type));
+        body.put("records", records);
+        ctx.json(body);
     }
 
     private void deleteTrip(Context ctx) throws Exception {

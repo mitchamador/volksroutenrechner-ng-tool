@@ -32,7 +32,8 @@ function buildQuery(params) {
 async function loadTrips(type) {
     const { from, to } = currentPeriod();
     const res = await fetch('/api/trips/' + type + buildQuery({ from, to }));
-    renderTripTable(type, await res.json());
+    const body = await res.json();
+    renderTripTable(type, body.since, body.records);
 }
 
 async function loadAccel() {
@@ -46,11 +47,17 @@ function loadAll() {
     loadAccel();
 }
 
-function renderTripTable(type, rows) {
+function renderTripTable(type, since, rows) {
     const table = document.getElementById('table-' + type);
     let html = '<thead><tr>' +
         '<th>Дата</th><th>Пробег, км</th><th>Ср. скорость, км/ч</th><th>Расход, л/100км</th><th>Топливо, л</th><th>Время в пути</th><th></th>' +
         '</tr></thead><tbody>';
+    if (since !== null && since !== undefined) {
+        html += '<tr class="text-muted fst-italic">' +
+            '<td>' + millisToLocal(since) + '</td>' +
+            '<td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td></td>' +
+            '</tr>';
+    }
     for (const r of rows) {
         const hours = Math.floor(r.totalMinutes / 60);
         const minutes = r.totalMinutes % 60;
