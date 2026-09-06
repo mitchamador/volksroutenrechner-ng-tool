@@ -19,12 +19,13 @@ public class SqliteJournalRepository implements JournalRepository {
     }
 
     @Override
-    public List<TripRecord> findTrips(char tripType, Long from, Long to) throws SQLException {
+    public List<TripRecord> findTrips(char tripType, Long from, Long to, Integer limit, Integer offset) throws SQLException {
         StringBuilder sql = new StringBuilder("SELECT * FROM trip_records WHERE trip_type = ?");
         List<Object> params = new ArrayList<>();
         params.add(String.valueOf(tripType));
         appendPeriod(sql, params, "time", from, to);
         sql.append(" ORDER BY time DESC");
+        appendLimitOffset(sql, params, limit, offset);
 
         List<TripRecord> result = new ArrayList<>();
         try (Connection connection = database.getConnection();
@@ -40,11 +41,21 @@ public class SqliteJournalRepository implements JournalRepository {
     }
 
     @Override
-    public List<AccelRecord> findAccels(Long from, Long to) throws SQLException {
+    public int countTrips(char tripType, Long from, Long to) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM trip_records WHERE trip_type = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(String.valueOf(tripType));
+        appendPeriod(sql, params, "time", from, to);
+        return executeCount(sql, params);
+    }
+
+    @Override
+    public List<AccelRecord> findAccels(Long from, Long to, Integer limit, Integer offset) throws SQLException {
         StringBuilder sql = new StringBuilder("SELECT * FROM accel_records WHERE 1 = 1");
         List<Object> params = new ArrayList<>();
         appendPeriod(sql, params, "start_time", from, to);
         sql.append(" ORDER BY start_time DESC");
+        appendLimitOffset(sql, params, limit, offset);
 
         List<AccelRecord> result = new ArrayList<>();
         try (Connection connection = database.getConnection();
@@ -57,6 +68,14 @@ public class SqliteJournalRepository implements JournalRepository {
             }
         }
         return result;
+    }
+
+    @Override
+    public int countAccels(Long from, Long to) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM accel_records WHERE 1 = 1");
+        List<Object> params = new ArrayList<>();
+        appendPeriod(sql, params, "start_time", from, to);
+        return executeCount(sql, params);
     }
 
     @Override
@@ -186,6 +205,27 @@ public class SqliteJournalRepository implements JournalRepository {
             statement.setString(1, String.valueOf(tripType));
             statement.setLong(2, sinceTime);
             statement.executeUpdate();
+        }
+    }
+
+    private void appendLimitOffset(StringBuilder sql, List<Object> params, Integer limit, Integer offset) {
+        if (limit != null) {
+            sql.append(" LIMIT ?");
+            params.add(limit);
+            if (offset != null) {
+                sql.append(" OFFSET ?");
+                params.add(offset);
+            }
+        }
+    }
+
+    private int executeCount(StringBuilder sql, List<Object> params) throws SQLException {
+        try (Connection connection = database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            bindParams(statement, params);
+            try (ResultSet rs = statement.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
         }
     }
 

@@ -1,4 +1,10 @@
 const TRIP_TYPES = ['C', 'A', 'B'];
+const ALL_TYPES = ['C', 'A', 'B', 'accel'];
+const pageState = { C: 1, A: 1, B: 1, accel: 1 };
+
+function getPageSize() {
+    return parseInt(document.getElementById('pageSize').value, 10);
+}
 
 function dateToMillis(inputValue, endOfDay) {
     if (!inputValue) return null;
@@ -31,20 +37,56 @@ function buildQuery(params) {
 
 async function loadTrips(type) {
     const { from, to } = currentPeriod();
-    const res = await fetch('/api/trips/' + type + buildQuery({ from, to }));
-    const body = await res.json();
+    const pageSize = getPageSize();
+    let page = pageState[type];
+    let body = await fetchTrips(type, from, to, page, pageSize);
+    if (body.records.length === 0 && page > 1) {
+        page = pageState[type] = page - 1;
+        body = await fetchTrips(type, from, to, page, pageSize);
+    }
     renderTripTable(type, body.since, body.records);
+    renderPagination(type, body.total, body.page, body.pageSize);
+}
+
+async function fetchTrips(type, from, to, page, pageSize) {
+    const res = await fetch('/api/trips/' + type + buildQuery({ from, to, page, pageSize }));
+    return res.json();
 }
 
 async function loadAccel() {
     const { from, to } = currentPeriod();
-    const res = await fetch('/api/accel' + buildQuery({ from, to }));
-    renderAccelTable(await res.json());
+    const pageSize = getPageSize();
+    let page = pageState.accel;
+    let body = await fetchAccel(from, to, page, pageSize);
+    if (body.records.length === 0 && page > 1) {
+        page = pageState.accel = page - 1;
+        body = await fetchAccel(from, to, page, pageSize);
+    }
+    renderAccelTable(body.records);
+    renderPagination('accel', body.total, body.page, body.pageSize);
+}
+
+async function fetchAccel(from, to, page, pageSize) {
+    const res = await fetch('/api/accel' + buildQuery({ from, to, page, pageSize }));
+    return res.json();
 }
 
 function loadAll() {
+    ALL_TYPES.forEach(t => { pageState[t] = 1; });
     TRIP_TYPES.forEach(loadTrips);
     loadAccel();
+}
+
+function renderPagination(type, total, page, pageSize) {
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    document.getElementById('pageInfo-' + type).textContent =
+        'Страница ' + page + ' из ' + totalPages + ' (всего записей: ' + total + ')';
+    document.getElementById('prevPage-' + type).disabled = page <= 1;
+    document.getElementById('nextPage-' + type).disabled = page >= totalPages;
+}
+
+function reloadType(type) {
+    return type === 'accel' ? loadAccel() : loadTrips(type);
 }
 
 function renderTripTable(type, since, rows) {
@@ -111,6 +153,20 @@ document.getElementById('resetFilter').addEventListener('click', () => {
     document.getElementById('filterFrom').value = '';
     document.getElementById('filterTo').value = '';
     loadAll();
+});
+document.getElementById('pageSize').addEventListener('change', loadAll);
+
+ALL_TYPES.forEach(type => {
+    document.getElementById('prevPage-' + type).addEventListener('click', () => {
+        if (pageState[type] > 1) {
+            pageState[type]--;
+            reloadType(type);
+        }
+    });
+    document.getElementById('nextPage-' + type).addEventListener('click', () => {
+        pageState[type]++;
+        reloadType(type);
+    });
 });
 
 document.getElementById('importBtn').addEventListener('click', async () => {

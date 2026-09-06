@@ -24,6 +24,15 @@
                 <button id="applyFilter" class="btn btn-sm btn-primary">Применить</button>
                 <button id="resetFilter" class="btn btn-sm btn-outline-secondary">Сбросить</button>
             </div>
+            <div>
+                <label class="form-label mb-1">Записей на странице</label>
+                <select id="pageSize" class="form-select form-select-sm">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
 
             <div class="ms-md-auto d-flex flex-wrap gap-2 align-items-end">
                 <div>
@@ -44,10 +53,46 @@
     </ul>
 
     <div class="tab-content border border-top-0 p-3 bg-white">
-        <div class="tab-pane fade show active" id="tab-C"><div class="table-responsive"><table class="table table-striped table-sm align-middle" id="table-C"></table></div></div>
-        <div class="tab-pane fade" id="tab-A"><div class="table-responsive"><table class="table table-striped table-sm align-middle" id="table-A"></table></div></div>
-        <div class="tab-pane fade" id="tab-B"><div class="table-responsive"><table class="table table-striped table-sm align-middle" id="table-B"></table></div></div>
-        <div class="tab-pane fade" id="tab-accel"><div class="table-responsive"><table class="table table-striped table-sm align-middle" id="table-accel"></table></div></div>
+        <div class="tab-pane fade show active" id="tab-C">
+            <div class="table-responsive"><table class="table table-striped table-sm align-middle" id="table-C"></table></div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="small text-muted" id="pageInfo-C"></div>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="prevPage-C">&laquo; Назад</button>
+                    <button class="btn btn-sm btn-outline-secondary" id="nextPage-C">Вперёд &raquo;</button>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="tab-A">
+            <div class="table-responsive"><table class="table table-striped table-sm align-middle" id="table-A"></table></div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="small text-muted" id="pageInfo-A"></div>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="prevPage-A">&laquo; Назад</button>
+                    <button class="btn btn-sm btn-outline-secondary" id="nextPage-A">Вперёд &raquo;</button>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="tab-B">
+            <div class="table-responsive"><table class="table table-striped table-sm align-middle" id="table-B"></table></div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="small text-muted" id="pageInfo-B"></div>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="prevPage-B">&laquo; Назад</button>
+                    <button class="btn btn-sm btn-outline-secondary" id="nextPage-B">Вперёд &raquo;</button>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="tab-accel">
+            <div class="table-responsive"><table class="table table-striped table-sm align-middle" id="table-accel"></table></div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="small text-muted" id="pageInfo-accel"></div>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="prevPage-accel">&laquo; Назад</button>
+                    <button class="btn btn-sm btn-outline-secondary" id="nextPage-accel">Вперёд &raquo;</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card mt-4">

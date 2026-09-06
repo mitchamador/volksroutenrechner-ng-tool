@@ -9,12 +9,18 @@ import java.util.List;
 public interface JournalRepository {
 
     /**
-     * @param from нижняя граница периода (epoch millis, включительно), null - без ограничения
-     * @param to   верхняя граница периода (epoch millis, включительно), null - без ограничения
+     * @param from   нижняя граница периода (epoch millis, включительно), null - без ограничения
+     * @param to     верхняя граница периода (epoch millis, включительно), null - без ограничения
+     * @param limit  максимум записей в результате (для пагинации), null - без ограничения
+     * @param offset сколько записей пропустить (для пагинации), null - без ограничения
      */
-    List<TripRecord> findTrips(char tripType, Long from, Long to) throws SQLException;
+    List<TripRecord> findTrips(char tripType, Long from, Long to, Integer limit, Integer offset) throws SQLException;
 
-    List<AccelRecord> findAccels(Long from, Long to) throws SQLException;
+    int countTrips(char tripType, Long from, Long to) throws SQLException;
+
+    List<AccelRecord> findAccels(Long from, Long to, Integer limit, Integer offset) throws SQLException;
+
+    int countAccels(Long from, Long to) throws SQLException;
 
     void deleteTrip(long id) throws SQLException;
 

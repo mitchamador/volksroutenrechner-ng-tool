@@ -31,7 +31,7 @@ public class JournalExporter {
         JournalEntry[] entries = journal.getEntries();
 
         for (int i = 0; i < TRIP_TYPES.length; i++) {
-            List<TripRecord> records = repository.findTrips(TRIP_TYPES[i], null, null);
+            List<TripRecord> records = repository.findTrips(TRIP_TYPES[i], null, null, null, null);
             JournalEntry entry = entries[i];
             Time latest = null;
             for (TripRecord r : records) {
@@ -59,7 +59,7 @@ public class JournalExporter {
         }
 
         JournalEntry accelEntry = entries[3];
-        for (AccelRecord r : repository.findAccels(null, null)) {
+        for (AccelRecord r : repository.findAccels(null, null, null, null)) {
             accelEntry.getItems().add(new AccelItem(new Time(r.getStartTime()), r.getLowerSpeed(), r.getUpperSpeed(), r.getResultCs()));
         }
 

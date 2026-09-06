@@ -51,11 +51,20 @@ public class WebServer {
 
     private void getTrips(Context ctx) throws Exception {
         char type = parseTripType(ctx.pathParam("type"));
-        List<TripRecord> records = repository.findTrips(type, parseLongParam(ctx.queryParam("from")), parseLongParam(ctx.queryParam("to")));
+        Long from = parseLongParam(ctx.queryParam("from"));
+        Long to = parseLongParam(ctx.queryParam("to"));
+        int pageSize = parsePageSize(ctx.queryParam("pageSize"));
+        int page = parsePage(ctx.queryParam("page"));
+
+        List<TripRecord> records = repository.findTrips(type, from, to, pageSize, (page - 1) * pageSize);
+        int total = repository.countTrips(type, from, to);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("since", repository.getSinceTime(type));
         body.put("records", records);
+        body.put("total", total);
+        body.put("page", page);
+        body.put("pageSize", pageSize);
         ctx.json(body);
     }
 
@@ -72,7 +81,20 @@ public class WebServer {
     }
 
     private void getAccels(Context ctx) throws Exception {
-        ctx.json(repository.findAccels(parseLongParam(ctx.queryParam("from")), parseLongParam(ctx.queryParam("to"))));
+        Long from = parseLongParam(ctx.queryParam("from"));
+        Long to = parseLongParam(ctx.queryParam("to"));
+        int pageSize = parsePageSize(ctx.queryParam("pageSize"));
+        int page = parsePage(ctx.queryParam("page"));
+
+        List<AccelRecord> records = repository.findAccels(from, to, pageSize, (page - 1) * pageSize);
+        int total = repository.countAccels(from, to);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("records", records);
+        body.put("total", total);
+        body.put("page", page);
+        body.put("pageSize", pageSize);
+        ctx.json(body);
     }
 
     private void deleteAccel(Context ctx) throws Exception {
@@ -93,7 +115,10 @@ public class WebServer {
             ctx.status(400).json(errorBody("не передан файл (поле 'file')"));
             return;
         }
-        byte[] data = readAll(file.content());
+        byte[] data;
+        try (InputStream in = file.content()) {
+            data = readAll(in);
+        }
         Journal journal = new Journal(data);
         JournalImporter.ImportResult result = new JournalImporter(repository).importJournal(journal);
 
@@ -145,6 +170,24 @@ public class WebServer {
 
     private Long parseLongParam(String value) {
         return value == null || value.isEmpty() ? null : Long.parseLong(value);
+    }
+
+    private static final int DEFAULT_PAGE_SIZE = 25;
+    private static final int MAX_PAGE_SIZE = 500;
+
+    private int parsePageSize(String raw) {
+        int size = (raw == null || raw.isEmpty()) ? DEFAULT_PAGE_SIZE : Integer.parseInt(raw);
+        if (size < 1) {
+            size = 1;
+        } else if (size > MAX_PAGE_SIZE) {
+            size = MAX_PAGE_SIZE; // защита от чрезмерно тяжёлых запросов
+        }
+        return size;
+    }
+
+    private int parsePage(String raw) {
+        int page = (raw == null || raw.isEmpty()) ? 1 : Integer.parseInt(raw);
+        return Math.max(page, 1);
     }
 
     private byte[] readAll(InputStream in) throws IOException {

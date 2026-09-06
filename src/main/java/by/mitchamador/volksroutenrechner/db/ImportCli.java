@@ -36,8 +36,8 @@ public class ImportCli {
 
     private static void printCounts(JournalRepository repository) throws SQLException {
         for (char type : new char[]{'C', 'A', 'B'}) {
-            System.out.println("trip " + type + ": " + repository.findTrips(type, null, null).size() + " записей в БД");
+            System.out.println("trip " + type + ": " + repository.countTrips(type, null, null) + " записей в БД");
         }
-        System.out.println("accel: " + repository.findAccels(null, null).size() + " записей в БД");
+        System.out.println("accel: " + repository.countAccels(null, null) + " записей в БД");
     }
 }
