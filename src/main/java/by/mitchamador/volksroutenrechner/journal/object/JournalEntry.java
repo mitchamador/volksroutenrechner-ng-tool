@@ -93,13 +93,13 @@ public class JournalEntry {
         }
     }
 
-    private final static String[] headers = new String[]{"trip C journal", "trip A journal", "trip B journal:", "accel journal"};
+    private final static String[] headers = new String[]{"trip C journal", "trip A journal", "trip B journal", "accel journal"};
 
     public String getPrintableString(boolean units) {
         StringBuilder s = new StringBuilder();
         s.append(headers[index]);
         if (index < 3) {
-            s.append("; ").append(time.getPrintableString());
+            s.append("; since ").append(time.getPrintableString());
         }
         s.append("\n");
         for (JournalItem item : itemsList) {
