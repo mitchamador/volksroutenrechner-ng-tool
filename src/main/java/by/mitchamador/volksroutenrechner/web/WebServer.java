@@ -7,6 +7,10 @@ import by.mitchamador.volksroutenrechner.db.record.AccelRecord;
 import by.mitchamador.volksroutenrechner.db.record.TripRecord;
 import by.mitchamador.volksroutenrechner.journal.JournalCodeFormatter;
 import by.mitchamador.volksroutenrechner.journal.object.Journal;
+import by.mitchamador.volksroutenrechner.mcu.IntelHexFormatException;
+import by.mitchamador.volksroutenrechner.mcu.IntelHexParser;
+import by.mitchamador.volksroutenrechner.mcu.McuEepromConverter;
+import by.mitchamador.volksroutenrechner.mcu.MemorySegment;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
@@ -15,6 +19,7 @@ import io.javalin.http.staticfiles.Location;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +48,8 @@ public class WebServer {
 
         app.post("/api/import", this::importFile);
         app.get("/api/export", this::exportJournal);
+
+        app.post("/api/mcu/convert", this::convertMcuEeprom);
 
         app.exception(Exception.class, (e, ctx) -> {
             e.printStackTrace();
@@ -151,6 +158,45 @@ public class WebServer {
             ctx.contentType("application/octet-stream");
             ctx.header("Content-Disposition", "attachment; filename=\"journal_" + size + ".bin\"");
             ctx.result(data);
+        }
+    }
+
+    private void convertMcuEeprom(Context ctx) throws Exception {
+        UploadedFile file = ctx.uploadedFile("file");
+        if (file == null) {
+            ctx.status(400).json(errorBody("не передан файл (поле 'file')"));
+            return;
+        }
+
+        byte[] data;
+        try (InputStream in = file.content()) {
+            data = readAll(in);
+        }
+        String content = new String(data, StandardCharsets.US_ASCII);
+
+        List<MemorySegment> segments;
+        try {
+            segments = IntelHexParser.parse(content);
+        } catch (IntelHexFormatException e) {
+            ctx.status(400).json(errorBody("не удалось разобрать HEX-файл: " + e.getMessage()));
+            return;
+        }
+
+        String format = ctx.formParam("format");
+        String code = McuEepromConverter.INSTANCE.convert(segments, ctx.formParam("type"), file.filename());
+
+        if (code.isEmpty()) {
+            ctx.status(400).json(errorBody("в файле не найдено EEPROM-данных для выбранного типа контроллера"));
+            return;
+        }
+
+        if ("text".equalsIgnoreCase(format)) {
+            ctx.contentType("text/plain; charset=UTF-8");
+            ctx.result(code);
+        } else {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("code", code);
+            ctx.json(body);
         }
     }
 

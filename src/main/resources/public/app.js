@@ -210,10 +210,64 @@ document.getElementById('importBtn').addEventListener('click', async () => {
     }
 });
 
-document.getElementById('exportBtn').addEventListener('click', () => {
+document.getElementById('exportBtn').addEventListener('click', async () => {
     const format = document.getElementById('exportFormat').value;
     const size = document.getElementById('exportSize').value;
-    window.location = '/api/export' + buildQuery({ format, size });
+
+    if (format === 'c') {
+        const resultBlock = document.getElementById('exportResultBlock');
+        const resultEl = document.getElementById('exportResult');
+        resultEl.textContent = 'Формирую...';
+        resultBlock.classList.remove('d-none');
+        const res = await fetch('/api/export' + buildQuery({ format, size }));
+        resultEl.textContent = await res.text();
+    } else {
+        window.location = '/api/export' + buildQuery({ format, size });
+    }
 });
+
+document.getElementById('exportCopyBtn').addEventListener('click', () => {
+    copyToClipboard(document.getElementById('exportResult').textContent);
+});
+
+document.getElementById('mcuConvertBtn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('mcuFile');
+    const status = document.getElementById('mcuStatus');
+    const resultBlock = document.getElementById('mcuResultBlock');
+    const resultEl = document.getElementById('mcuResult');
+
+    if (!fileInput.files.length) {
+        status.textContent = 'Выберите файл';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('type', document.getElementById('mcuType').value);
+
+    status.textContent = 'Преобразую...';
+    resultBlock.classList.add('d-none');
+    try {
+        const res = await fetch('/api/mcu/convert', { method: 'POST', body: formData });
+        const result = await res.json();
+        if (!res.ok) {
+            status.textContent = 'Ошибка: ' + (result.error || res.status);
+            return;
+        }
+        status.textContent = '';
+        resultEl.textContent = result.code;
+        resultBlock.classList.remove('d-none');
+    } catch (e) {
+        status.textContent = 'Ошибка: ' + e;
+    }
+});
+
+document.getElementById('mcuCopyBtn').addEventListener('click', () => {
+    copyToClipboard(document.getElementById('mcuResult').textContent);
+});
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text);
+}
 
 loadAll();
