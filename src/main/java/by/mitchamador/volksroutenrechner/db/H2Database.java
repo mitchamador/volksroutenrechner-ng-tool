@@ -5,35 +5,34 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class Database {
+public class H2Database implements ConnectionProvider {
 
     private static final String SCHEMA_TRIP_RECORDS =
             "CREATE TABLE IF NOT EXISTS trip_records (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "trip_type TEXT NOT NULL, " +
-                    "time INTEGER NOT NULL, " + // epoch millis
-                    "odo REAL NOT NULL, " +
-                    "average_speed REAL NOT NULL, " +
-                    "average_fuel REAL NOT NULL, " +
-                    "total_fuel REAL NOT NULL, " +
-                    "total_minutes INTEGER NOT NULL" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "trip_type VARCHAR(1) NOT NULL, " +
+                    "time BIGINT NOT NULL, " + // epoch millis
+                    "odo DOUBLE NOT NULL, " +
+                    "average_speed DOUBLE NOT NULL, " +
+                    "average_fuel DOUBLE NOT NULL, " +
+                    "total_fuel DOUBLE NOT NULL, " +
+                    "total_minutes INT NOT NULL" +
                     ")";
 
     private static final String SCHEMA_ACCEL_RECORDS =
             "CREATE TABLE IF NOT EXISTS accel_records (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "start_time INTEGER NOT NULL, " + // epoch millis
-                    "lower_speed INTEGER NOT NULL, " +
-                    "upper_speed INTEGER NOT NULL, " +
-                    "result_cs INTEGER NOT NULL" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "start_time BIGINT NOT NULL, " + // epoch millis
+                    "lower_speed INT NOT NULL, " +
+                    "upper_speed INT NOT NULL, " +
+                    "result_cs INT NOT NULL" +
                     ")";
 
-    // хранит поле "since" из заголовка journal (по одному значению на trip_type: C/A/B) -
-    // это отдельное поле устройства, которое не выводится из самих записей
+    // см. комментарий в SqliteDatabase - поле "since" из заголовка journal, по одному на trip_type
     private static final String SCHEMA_JOURNAL_META =
             "CREATE TABLE IF NOT EXISTS journal_meta (" +
-                    "trip_type TEXT PRIMARY KEY, " +
-                    "since_time INTEGER NOT NULL" + // epoch millis
+                    "trip_type VARCHAR(1) PRIMARY KEY, " +
+                    "since_time BIGINT NOT NULL" + // epoch millis
                     ")";
 
     private static final String INDEX_TRIP_RECORDS =
@@ -44,14 +43,17 @@ public class Database {
 
     private final String url;
 
-    public Database(String dbFilePath) {
-        this.url = "jdbc:sqlite:" + dbFilePath;
+    public H2Database(String dbFilePath) {
+        // H2 сам добавляет расширение (.mv.db) к указанному пути файла
+        this.url = "jdbc:h2:file:" + dbFilePath;
     }
 
+    @Override
     public Connection getConnection() throws SQLException {
         return DriverManager.getConnection(url);
     }
 
+    @Override
     public void init() throws SQLException {
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {

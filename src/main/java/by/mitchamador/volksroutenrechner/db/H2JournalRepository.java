@@ -10,11 +10,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SqliteJournalRepository implements JournalRepository {
+/**
+ * Реализация {@link JournalRepository} на H2 (embedded, файловый режим).
+ * SQL почти идентичен {@link SqliteJournalRepository} - H2 понимает тот же диалект
+ * для обычных SELECT/INSERT/UPDATE/DELETE. Единственное отличие - updateSinceTimeIfNewer:
+ * H2 не поддерживает postgres-синтаксис "INSERT ... ON CONFLICT DO UPDATE ... WHERE",
+ * поэтому здесь тот же результат собран через обычные UPDATE + условный INSERT.
+ */
+public class H2JournalRepository implements JournalRepository {
 
     private final ConnectionProvider database;
 
-    public SqliteJournalRepository(ConnectionProvider database) {
+    public H2JournalRepository(ConnectionProvider database) {
         this.database = database;
     }
 
@@ -197,14 +204,30 @@ public class SqliteJournalRepository implements JournalRepository {
 
     @Override
     public void updateSinceTimeIfNewer(char tripType, long sinceTime) throws SQLException {
-        String sql = "INSERT INTO journal_meta (trip_type, since_time) VALUES (?, ?) " +
-                "ON CONFLICT(trip_type) DO UPDATE SET since_time = excluded.since_time " +
-                "WHERE excluded.since_time > journal_meta.since_time";
-        try (Connection connection = database.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, String.valueOf(tripType));
-            statement.setLong(2, sinceTime);
-            statement.executeUpdate();
+        // H2 не поддерживает postgres "ON CONFLICT DO UPDATE ... WHERE" (только безусловный
+        // MERGE), поэтому условие "только если новее" собрано вручную из двух шагов:
+        // 1) обновить, только если строка есть и новое значение больше старого;
+        // 2) если ничего не обновилось - вставить, но только если строки ещё нет вовсе
+        //    (иначе шаг 1 просто не подошёл по условию "новее", и вставлять не нужно).
+        try (Connection connection = database.getConnection()) {
+            String updateSql = "UPDATE journal_meta SET since_time = ? WHERE trip_type = ? AND ? > since_time";
+            int updated;
+            try (PreparedStatement update = connection.prepareStatement(updateSql)) {
+                update.setLong(1, sinceTime);
+                update.setString(2, String.valueOf(tripType));
+                update.setLong(3, sinceTime);
+                updated = update.executeUpdate();
+            }
+            if (updated == 0) {
+                String insertSql = "INSERT INTO journal_meta (trip_type, since_time) " +
+                        "SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM journal_meta WHERE trip_type = ?)";
+                try (PreparedStatement insert = connection.prepareStatement(insertSql)) {
+                    insert.setString(1, String.valueOf(tripType));
+                    insert.setLong(2, sinceTime);
+                    insert.setString(3, String.valueOf(tripType));
+                    insert.executeUpdate();
+                }
+            }
         }
     }
 

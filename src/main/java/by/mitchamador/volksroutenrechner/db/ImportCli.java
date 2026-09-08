@@ -19,10 +19,10 @@ public class ImportCli {
         String dbFile = args[0];
         String journalFile = args[1];
 
-        Database database = new Database(dbFile);
+        H2Database database = new H2Database(dbFile);
         database.init();
 
-        JournalRepository repository = new SqliteJournalRepository(database);
+        JournalRepository repository = new H2JournalRepository(database);
         JournalImporter importer = new JournalImporter(repository);
 
         Journal journal = Journal.create(journalFile);

@@ -36,6 +36,10 @@ public class Journal {
                     entries[i].fillTime(array, 16 + 5 * i);
                 }
             }
+        } else {
+            for (int i = 0; i < 4; i++) {
+                entries[i] = new JournalEntry(i);
+            }
         }
     }
 
