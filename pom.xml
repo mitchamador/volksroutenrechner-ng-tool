@@ -58,6 +58,18 @@
             <artifactId>slf4j-simple</artifactId>
             <version>2.0.17</version>
         </dependency>
+        <!-- статика фронтенда (Bootstrap, Font Awesome) вместо ручного вендоринга файлов -
+             см. WebServer.start(): config.staticFiles.enableWebjars() -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>5.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>font-awesome</artifactId>
+            <version>6.4.2</version>
+        </dependency>
     </dependencies>
 
     <build>

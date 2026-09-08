@@ -2,6 +2,21 @@ const TRIP_TYPES = ['C', 'A', 'B'];
 const ALL_TYPES = ['C', 'A', 'B', 'accel'];
 const pageState = { C: 1, A: 1, B: 1, accel: 1 };
 
+let pendingDelete = null;
+const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+function confirmDelete(action) {
+    pendingDelete = action;
+    deleteModal.show();
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+    deleteModal.hide();
+    const action = pendingDelete;
+    pendingDelete = null;
+    if (action) action();
+});
+
 function getPageSize() {
     return parseInt(document.getElementById('pageSize').value, 10);
 }
@@ -110,7 +125,7 @@ function renderTripTable(type, since, rows) {
             '<td>' + r.averageFuel.toFixed(1) + '</td>' +
             '<td>' + r.totalFuel.toFixed(1) + '</td>' +
             '<td>' + String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + '</td>' +
-            '<td class="text-end"><button class="btn btn-sm btn-outline-danger" data-type="' + type + '" data-id="' + r.id + '">Удалить</button></td>' +
+            '<td class="text-end"><button class="btn btn-sm btn-outline-danger" title="Удалить" data-type="' + type + '" data-id="' + r.id + '"><i class="fa-solid fa-trash"></i></button></td>' +
             '</tr>';
     }
     table.innerHTML = html + '</tbody>';
@@ -127,7 +142,7 @@ function renderAccelTable(rows) {
             '<td>' + millisToLocal(r.startTime) + '</td>' +
             '<td>' + r.lowerSpeed + ' - ' + r.upperSpeed + ' км/ч</td>' +
             '<td>' + (r.resultCs / 100).toFixed(2) + '</td>' +
-            '<td class="text-end"><button class="btn btn-sm btn-outline-danger" data-id="' + r.id + '">Удалить</button></td>' +
+            '<td class="text-end"><button class="btn btn-sm btn-outline-danger" title="Удалить" data-id="' + r.id + '"><i class="fa-solid fa-trash"></i></button></td>' +
             '</tr>';
     }
     table.innerHTML = html + '</tbody>';
@@ -136,16 +151,18 @@ function renderAccelTable(rows) {
     });
 }
 
-async function deleteTrip(type, id) {
-    if (!confirm('Удалить запись?')) return;
-    await fetch('/api/trips/' + type + '/' + id, { method: 'DELETE' });
-    loadTrips(type);
+function deleteTrip(type, id) {
+    confirmDelete(async () => {
+        await fetch('/api/trips/' + type + '/' + id, { method: 'DELETE' });
+        loadTrips(type);
+    });
 }
 
-async function deleteAccel(id) {
-    if (!confirm('Удалить запись?')) return;
-    await fetch('/api/accel/' + id, { method: 'DELETE' });
-    loadAccel();
+function deleteAccel(id) {
+    confirmDelete(async () => {
+        await fetch('/api/accel/' + id, { method: 'DELETE' });
+        loadAccel();
+    });
 }
 
 document.getElementById('applyFilter').addEventListener('click', loadAll);

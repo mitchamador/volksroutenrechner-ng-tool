@@ -28,7 +28,10 @@ public class WebServer {
     }
 
     public Javalin start(int port) {
-        Javalin app = Javalin.create(config -> config.staticFiles.add("/public", Location.CLASSPATH));
+        Javalin app = Javalin.create(config -> {
+            config.staticFiles.add("/public", Location.CLASSPATH);
+            config.staticFiles.enableWebjars(); // Bootstrap/Font Awesome из org.webjars:*, см. pom.xml
+        });
 
         app.get("/api/trips/{type}", this::getTrips);
         app.delete("/api/trips/{type}/{id}", this::deleteTrip);
