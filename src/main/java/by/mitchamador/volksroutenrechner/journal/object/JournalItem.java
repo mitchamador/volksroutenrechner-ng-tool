@@ -12,6 +12,11 @@ public abstract class JournalItem {
         time = new Time(Journal.getArray(array, 1, 5));
     }
 
+    protected JournalItem(int status, Time time) {
+        this.status = status;
+        this.time = time;
+    }
+
     public boolean isValid() {
         return status == ITEM_V1 || status == ITEM_V2;
     }

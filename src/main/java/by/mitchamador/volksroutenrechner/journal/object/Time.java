@@ -34,6 +34,16 @@ public class Time {
         year = 2000;
     }
 
+    public Time(long epochMillis) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(epochMillis);
+        minute = c.get(Calendar.MINUTE);
+        hour = c.get(Calendar.HOUR_OF_DAY);
+        day = c.get(Calendar.DAY_OF_MONTH);
+        month = c.get(Calendar.MONTH);
+        year = c.get(Calendar.YEAR);
+    }
+
     public Date getDate() {
         Calendar c = Calendar.getInstance();
         c.clear();

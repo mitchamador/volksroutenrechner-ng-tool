@@ -77,6 +77,19 @@ public class TripItem extends JournalItem {
         }
     }
 
+    /**
+     * Сборка "напечатанных" (уже посчитанных) значений напрямую - используется при экспорте
+     * ранее сохранённых в БД записей обратно в journal (см. db.JournalExporter).
+     */
+    public TripItem(Time time, int pOdo, int pAverageSpeed, int pAverageFuel, int pTotalFuel, int pTime) {
+        super(JournalItem.ITEM_V2, time);
+        this.pOdo = pOdo;
+        this.pAverageSpeed = pAverageSpeed;
+        this.pAverageFuel = pAverageFuel;
+        this.pTotalFuel = pTotalFuel;
+        this.pTime = pTime;
+    }
+
     public void fixTime(String dateFix) {
         if (status == JournalItem.ITEM_V1) {
             if (time.getDate() != null && time.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().compareTo(

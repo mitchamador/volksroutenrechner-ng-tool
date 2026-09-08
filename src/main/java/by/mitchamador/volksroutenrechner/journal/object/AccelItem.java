@@ -26,6 +26,17 @@ public class AccelItem extends JournalItem {
         result = ((Byte.toUnsignedInt(array[9]) << 8) + Byte.toUnsignedInt(array[8]));
     }
 
+    /**
+     * Сборка из уже готовых значений - используется при экспорте записей из БД
+     * обратно в journal (см. db.JournalExporter).
+     */
+    public AccelItem(Time time, int lower, int upper, int result) {
+        super(JournalItem.ITEM_V2, time);
+        this.lower = lower;
+        this.upper = upper;
+        this.result = result;
+    }
+
     public int getLower() {
         return lower;
     }

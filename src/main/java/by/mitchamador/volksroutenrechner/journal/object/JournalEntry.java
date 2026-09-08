@@ -119,6 +119,14 @@ public class JournalEntry {
         }
     }
 
+    /**
+     * Прямая установка времени "since" - используется при сборке journal из БД
+     * (см. db.JournalExporter), где нет второго JournalEntry для сравнения.
+     */
+    public void setTime(Time time) {
+        this.time = time;
+    }
+
     public void addDataEntry(JournalEntry entry) {
         setTime(entry);
         addAllItems(entry.getItems());
