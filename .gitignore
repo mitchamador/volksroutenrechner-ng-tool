@@ -1,0 +1,8 @@
+*.iml
+.idea/*
+target/*
+/*.bin
+/*.txt
+bin/*
+dependency-reduced-pom.xml
+*.db
