@@ -130,3 +130,9 @@ curl -F "file=@dump.hex" -F "type=auto" -F "format=text" \
 - Java 11+, зависимости — Javalin (веб-сервер), Jackson (JSON), H2/SQLite (БД),
   Bootstrap + Font Awesome через WebJars (фронтенд), commons-cli (аргументы
   командной строки).
+
+## Лицензия
+
+MIT — см. [`LICENSE`](LICENSE). Лицензии сторонних зависимостей — см.
+[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
+
