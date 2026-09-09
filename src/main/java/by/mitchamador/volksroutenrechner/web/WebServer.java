@@ -32,10 +32,16 @@ public class WebServer {
         this.repository = repository;
     }
 
-    public Javalin start(int port) {
+    public Javalin start(String host, int port, String rootPath) {
+        String contextPath = (rootPath == null || rootPath.isEmpty()) ? "/" : rootPath;
+
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add("/public", Location.CLASSPATH);
             config.staticFiles.enableWebjars(); // Bootstrap/Font Awesome из org.webjars:*, см. pom.xml
+            config.router.contextPath = contextPath;
+            config.router.ignoreTrailingSlashes = true;
+            config.jetty.defaultHost = host;
+            config.jetty.defaultPort = port;
         });
 
         app.get("/api/trips/{type}", this::getTrips);
@@ -56,7 +62,7 @@ public class WebServer {
             ctx.status(500).json(errorBody(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
         });
 
-        return app.start(port);
+        return app.start();
     }
 
     private void getTrips(Context ctx) throws Exception {

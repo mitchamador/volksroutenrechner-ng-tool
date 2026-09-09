@@ -64,7 +64,7 @@ async function loadTrips(type) {
 }
 
 async function fetchTrips(type, from, to, page, pageSize) {
-    const res = await fetch('/api/trips/' + type + buildQuery({ from, to, page, pageSize }));
+    const res = await fetch('api/trips/' + type + buildQuery({ from, to, page, pageSize }));
     return res.json();
 }
 
@@ -82,7 +82,7 @@ async function loadAccel() {
 }
 
 async function fetchAccel(from, to, page, pageSize) {
-    const res = await fetch('/api/accel' + buildQuery({ from, to, page, pageSize }));
+    const res = await fetch('api/accel' + buildQuery({ from, to, page, pageSize }));
     return res.json();
 }
 
@@ -153,14 +153,14 @@ function renderAccelTable(rows) {
 
 function deleteTrip(type, id) {
     confirmDelete(async () => {
-        await fetch('/api/trips/' + type + '/' + id, { method: 'DELETE' });
+        await fetch('api/trips/' + type + '/' + id, { method: 'DELETE' });
         loadTrips(type);
     });
 }
 
 function deleteAccel(id) {
     confirmDelete(async () => {
-        await fetch('/api/accel/' + id, { method: 'DELETE' });
+        await fetch('api/accel/' + id, { method: 'DELETE' });
         loadAccel();
     });
 }
@@ -197,7 +197,7 @@ document.getElementById('importBtn').addEventListener('click', async () => {
     formData.append('file', fileInput.files[0]);
     status.textContent = 'Импортирую...';
     try {
-        const res = await fetch('/api/import', { method: 'POST', body: formData });
+        const res = await fetch('api/import', { method: 'POST', body: formData });
         const result = await res.json();
         if (!res.ok) {
             status.textContent = 'Ошибка: ' + (result.error || res.status);
@@ -219,10 +219,10 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
         const resultEl = document.getElementById('exportResult');
         resultEl.textContent = 'Формирую...';
         resultBlock.classList.remove('d-none');
-        const res = await fetch('/api/export' + buildQuery({ format, size }));
+        const res = await fetch('api/export' + buildQuery({ format, size }));
         resultEl.textContent = await res.text();
     } else {
-        window.location = '/api/export' + buildQuery({ format, size });
+        window.location = 'api/export' + buildQuery({ format, size });
     }
 });
 
@@ -248,7 +248,7 @@ document.getElementById('mcuConvertBtn').addEventListener('click', async () => {
     status.textContent = 'Преобразую...';
     resultBlock.classList.add('d-none');
     try {
-        const res = await fetch('/api/mcu/convert', { method: 'POST', body: formData });
+        const res = await fetch('api/mcu/convert', { method: 'POST', body: formData });
         const result = await res.json();
         if (!res.ok) {
             status.textContent = 'Ошибка: ' + (result.error || res.status);
