@@ -78,7 +78,7 @@ public enum McuEepromConverter {
         StringBuilder sb = new StringBuilder();
         int c = 0;
         boolean byteAddressed = (m.address == 0 || m.address == 0xF00000);
-        for (int i = 0; i < (0xc8 << (byteAddressed ? 0 : 1)); i++) {
+        for (int i = 0; i < (0xd8 << (byteAddressed ? 0 : 1)); i++) {
             int word;
             if ((c & 0x07) == 0) {
                 sb.append("__EEDATA(");
